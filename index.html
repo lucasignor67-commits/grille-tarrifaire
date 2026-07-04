@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="description" content="Grille tarifaire officielle de la Milicia de Cayo Perico — amendes, sanctions et calculateur de cumul.">
+<title>Milicia de Cayo Perico — Grille tarifaire</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232e7d43' d='M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #121212;
+    --surface-2: #161616;
+    --border: #222222;
+    --border-strong: #333333;
+    --text: #e6e6e6;
+    --text-dim: #8f8f8f;
+    --primary: #2e7d43;
+    --primary-hover: #266836;
+    --primary-light: #5fce7f;
+    --danger: #e06c6c;
+    --selected: #12241a;
+    --hover: #181818;
+    --mark: rgba(46, 125, 67, 0.45);
+    --radius: 6px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  mark { background: var(--mark); color: inherit; border-radius: 2px; padding: 0 1px; }
+  button { font-family: inherit; }
+  input { font-family: inherit; }
+
+  /* ---------- En-tête ---------- */
+  header {
+    background: #0e0e0e;
+    border-bottom: 2px solid var(--primary);
+    color: #fff;
+    padding: 18px 24px;
+  }
+  .header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .emblem { flex-shrink: 0; display: flex; }
+  header h1 {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    line-height: 1.25;
+  }
+  header .subtitle {
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
+  header .clock {
+    margin-left: auto;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* ---------- Mise en page ---------- */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 22px 24px 90px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 980px) {
+    .container { grid-template-columns: 1fr; padding: 14px 12px 120px; }
+    .panel-calc { position: static !important; max-height: none !important; }
+    header .clock { display: none; }
+  }
+
+  /* ---------- Barre d'outils ---------- */
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+  .search-wrap { flex: 1 1 230px; position: relative; }
+  .search-wrap input {
+    width: 100%;
+    padding: 9px 34px 9px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    transition: border-color .12s;
+  }
+  .search-wrap input:focus { border-color: var(--primary); }
+  .search-wrap .key-hint {
+    position: absolute;
+    right: 9px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--text-dim);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 1px 6px;
+    pointer-events: none;
+  }
+  .btn-ghost {
+    padding: 8px 13px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color .12s, background .12s;
+    white-space: nowrap;
+  }
+  .btn-ghost:hover { border-color: var(--primary); }
+  .result-count {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-left: auto;
+    white-space: nowrap;
+  }
+
+  /* ---------- Sections & tableaux ---------- */
+  .section { margin-bottom: 26px; }
+  .section > h2 {
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary-light);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section > h2:hover { color: #fff; }
+  .section > h2 .chev { font-size: 12px; transition: transform .15s; }
+  .section.collapsed > h2 .chev { transform: rotate(-90deg); }
+  .section > h2 .sec-count {
+    margin-left: auto;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-dim);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .section.collapsed .cat-block { display: none; }
+  .cat-block { margin-bottom: 18px; }
+  .cat-block > h3 {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  thead th {
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    background: var(--surface-2);
+    padding: 7px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  thead th.col-amount { text-align: right; width: 140px; }
+  thead th.col-action { width: 86px; text-align: center; }
+  tbody td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { cursor: pointer; }
+  tbody tr:hover { background: var(--hover); }
+  tbody tr.selected { background: var(--selected); box-shadow: inset 2px 0 0 var(--primary); }
+  td.amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  td.amount.special { color: var(--danger); font-weight: 600; font-size: 12.5px; }
+  td.action { text-align: center; }
+  .btn-add {
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--primary-light);
+    border-radius: var(--radius);
+    padding: 3px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .1s, color .1s, border-color .1s;
+  }
+  .btn-add:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .row-qty {
+    display: inline-block;
+    min-width: 20px;
+    margin-left: 8px;
+    padding: 1px 7px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 10px;
+    font-size: 11.5px;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+  .no-results {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .no-results button { margin-top: 10px; }
+
+  /* ---------- Panneau dossier ---------- */
+  .panel-calc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    position: sticky;
+    top: 16px;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 32px);
+  }
+  .panel-title {
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    border-radius: var(--radius) var(--radius) 0 0;
+    display: flex;
+    align-items: baseline;
+  }
+  .panel-title .hint { margin-left: auto; font-size: 11.5px; font-weight: 400; color: var(--text-dim); }
+  .calc-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .calc-fields input {
+    padding: 7px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+  }
+  .calc-fields input:focus { border-color: var(--primary); }
+  .calc-fields input.field-error {
+    border-color: var(--danger);
+    background: rgba(224, 108, 108, 0.08);
+  }
+  .calc-fields .time-field label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .calc-fields .time-field input { width: 100%; padding-right: 30px; }
+  .calc-fields .time-field .row { position: relative; }
+  .calc-fields .now-btn {
+    position: absolute;
+    right: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .calc-fields .now-btn:hover {
+    background: var(--surface-2);
+    color: var(--primary-light);
+  }
+  .calc-fields .duration-line {
+    grid-column: 1 / -1;
+    font-size: 12.5px;
+    color: var(--text-dim);
+  }
+  .calc-fields .duration-line span { color: var(--primary-light); font-weight: 600; }
+  .calc-list { overflow-y: auto; flex: 1; min-height: 60px; }
+  .calc-empty {
+    padding: 26px 18px;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .calc-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+  .calc-row .name { flex: 1; line-height: 1.35; }
+  .calc-row .name .custom-tag {
+    display: inline-block;
+    font-size: 10.5px;
+    color: var(--text-dim);
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    padding: 0 5px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .calc-row .subtotal {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .calc-row .subtotal.special { color: var(--danger); font-size: 12px; }
+  .qty-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .qty-controls button {
+    width: 22px; height: 22px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .qty-controls button:hover { border-color: var(--primary-light); color: var(--primary-light); }
+  .qty-controls .q { min-width: 20px; text-align: center; font-weight: 600; font-size: 13px; }
+  .btn-remove {
+    width: 22px; height: 22px;
+    border: none;
+    background: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .btn-remove:hover { color: var(--danger); }
+
+  /* Ligne manuelle */
+  .custom-adder {
+    border-bottom: 1px solid var(--border);
+  }
+  .custom-adder summary {
+    padding: 8px 16px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+  }
+  .custom-adder summary::before { content: "+ "; color: var(--primary-light); font-weight: 700; }
+  .custom-adder summary:hover { color: var(--text); }
+  .custom-adder .fields {
+    display: flex;
+    gap: 6px;
+    padding: 0 12px 10px;
+  }
+  .custom-adder input {
+    padding: 6px 9px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+  }
+  .custom-adder input:focus { border-color: var(--primary); }
+  .custom-adder input.lbl { flex: 1; min-width: 0; }
+  .custom-adder input.amt { width: 90px; }
+  .custom-adder button {
+    padding: 6px 12px;
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
+    background: var(--primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .custom-adder button:hover { background: var(--primary-hover); }
+
+  /* Pied du panneau */
+  .calc-footer {
+    border-top: 2px solid var(--border-strong);
+    padding: 12px 16px 14px;
+    background: var(--surface-2);
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .special-note {
+    color: var(--danger);
+    font-size: 12.5px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .total-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .total-line .label {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-dim);
+  }
+  .total-line .value {
+    font-size: 25px;
+    font-weight: 700;
+    color: var(--primary-light);
+    font-variant-numeric: tabular-nums;
+  }
+  .total-line .value.bump { animation: bump .25s ease; }
+  @keyframes bump { 40% { transform: scale(1.08); } }
+  .count-line { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+  .calc-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .calc-actions + .calc-actions { margin-top: 8px; }
+  .calc-actions button {
+    flex: 1;
+    padding: 8px 6px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    transition: background .1s, border-color .1s;
+  }
+  .calc-actions button:hover { background: var(--hover); border-color: var(--primary); }
+  .calc-actions button.primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+  .calc-actions button.primary:hover { background: var(--primary-hover); }
+  .calc-actions button.danger-armed {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+  }
+  .calc-actions button.btn-danger {
+    color: var(--danger);
+    border-color: var(--border-strong);
+  }
+  .calc-actions button.btn-danger:hover {
+    background: var(--danger);
+    border-color: var(--danger);
+    color: #fff;
+  }
+
+  /* ---------- Barre mobile ---------- */
+  .mobile-bar {
+    display: none;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: var(--surface-2);
+    border-top: 2px solid var(--primary);
+    padding: 10px 14px;
+    z-index: 40;
+    align-items: center;
+    gap: 12px;
+  }
+  .mobile-bar .mb-total {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--primary-light);
+    font-variant-numeric: tabular-nums;
+  }
+  .mobile-bar .mb-count { font-size: 12px; color: var(--text-dim); }
+  .mobile-bar button {
+    margin-left: auto;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--primary);
+    background: var(--primary);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  @media (max-width: 980px) { .mobile-bar.visible { display: flex; } }
+
+  /* ---------- Divers ---------- */
+  .scroll-top {
+    position: fixed;
+    right: 18px; bottom: 18px;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 17px;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+    z-index: 30;
+  }
+  .scroll-top.visible { opacity: 1; pointer-events: auto; }
+  .scroll-top:hover { border-color: var(--primary); color: var(--primary-light); }
+  @media (max-width: 980px) { .scroll-top { bottom: 74px; } }
+
+  footer {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 16px 24px 32px;
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    border-top: 1px solid var(--border);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 22px; left: 50%;
+    transform: translateX(-50%);
+    background: #e6e6e6;
+    color: #141414;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-size: 13.5px;
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+    z-index: 50;
+  }
+  .toast.show { opacity: 1; }
+
+  @media print {
+    header .clock, .toolbar, footer, .btn-add, .toast, .scroll-top,
+    .mobile-bar, .calc-actions, .custom-adder, .qty-controls button,
+    .btn-remove, .adjust-row button, thead th.col-action, td.action { display: none !important; }
+    body { background: #fff; color: #000; }
+    .container { display: block; }
+    .panel-calc { position: static; border: 1px solid #000; margin-bottom: 24px; max-height: none; }
+    .section.collapsed .cat-block { display: block; }
+    table, .panel-calc, .calc-footer, .panel-title, thead th { background: #fff !important; color: #000 !important; }
+    tbody tr.selected { background: #eee; }
+    .total-line .value, .section > h2 { color: #000 !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <span class="emblem">
+      <svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="none" stroke="#2e7d43" stroke-width="1.6" d="M12 2.8l7.2 2.7v5.4c0 4.6-3.1 8.6-7.2 10.1-4.1-1.5-7.2-5.5-7.2-10.1V5.5z"/>
+        <path fill="#5fce7f" d="M12 7l1.2 2.5 2.8.4-2 1.9.5 2.7L12 13.2l-2.5 1.3.5-2.7-2-1.9 2.8-.4z"/>
+      </svg>
+    </span>
+    <div>
+      <h1>Milicia de Cayo Perico</h1>
+      <span class="subtitle">Grille tarifaire officielle — Amendes et sanctions en vigueur</span>
+    </div>
+    <span class="clock" id="clock"></span>
+  </div>
+</header>
+
+<div class="container">
+  <main>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <input type="text" id="search" placeholder="Rechercher une infraction…" autocomplete="off" aria-label="Rechercher une infraction">
+        <span class="key-hint">/</span>
+      </div>
+      <button class="btn-ghost" id="sortBtn" title="Trier les infractions par montant">Tri : grille</button>
+      <button class="btn-ghost" id="collapseBtn" title="Replier ou déplier toutes les sections">Tout replier</button>
+      <span class="result-count" id="resultCount"></span>
+    </div>
+    <div id="content"></div>
+  </main>
+
+  <aside class="panel-calc" id="panel">
+    <div class="panel-title">Dossier d'amende <span class="hint">enregistré automatiquement</span></div>
+    <div class="calc-fields">
+      <input type="text" id="fieldLastName" placeholder="Nom de l'individu" autocomplete="off">
+      <input type="text" id="fieldFirstName" placeholder="Prénom de l'individu" autocomplete="off">
+      <input type="text" id="fieldAgent" placeholder="Matricule présent" autocomplete="off" style="grid-column: 1 / -1;">
+      <div class="time-field">
+        <label for="fieldArrest">Heure d'arrestation</label>
+        <div class="row">
+          <input type="time" id="fieldArrest">
+          <button type="button" class="now-btn" id="nowArrest" title="Mettre l'heure actuelle" aria-label="Mettre l'heure actuelle">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="time-field">
+        <label for="fieldRelease">Heure de libération</label>
+        <div class="row">
+          <input type="time" id="fieldRelease">
+          <button type="button" class="now-btn" id="nowRelease" title="Mettre l'heure actuelle" aria-label="Mettre l'heure actuelle">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="duration-line" id="durationLine" style="display:none">Durée de détention : <span id="durationValue"></span></div>
+    </div>
+    <div class="calc-list" id="calcList"></div>
+    <details class="custom-adder" id="customAdder">
+      <summary>Ajouter une ligne manuelle</summary>
+      <div class="fields">
+        <input type="text" class="lbl" id="customLabel" placeholder="Libellé" autocomplete="off">
+        <input type="number" class="amt" id="customAmount" placeholder="Montant $" min="0" step="500">
+        <button id="customAddBtn" type="button">OK</button>
+      </div>
+    </details>
+    <div class="calc-footer">
+      <div class="special-note" id="specialNote" style="display:none">Peine de mort / Exil requis — en référer à la hiérarchie.</div>
+      <div class="total-line">
+        <span class="label">Total à payer</span>
+        <span class="value" id="totalValue" aria-live="polite">$0</span>
+      </div>
+      <div class="count-line" id="countLine"></div>
+      <div class="calc-actions">
+        <button class="primary" id="copyBtn" title="Copier le récapitulatif en texte simple">Copier le récapitulatif</button>
+        <button id="copyDiscordBtn" title="Copier au format Discord (bloc de code)">Copier Discord</button>
+      </div>
+      <div class="calc-actions">
+        <button id="printBtn" title="Imprimer ou enregistrer en PDF">Imprimer</button>
+        <button id="clearBtn" title="Vider les infractions du dossier (clic de confirmation)">Vider</button>
+      </div>
+      <div class="calc-actions">
+        <button class="btn-danger" id="resetBtn" title="Tout effacer : infractions, identité, matricule et heures (clic de confirmation)">Tout supprimer</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div class="mobile-bar" id="mobileBar">
+  <div>
+    <div class="mb-total" id="mbTotal">$0</div>
+    <div class="mb-count" id="mbCount"></div>
+  </div>
+  <button id="mbView">Voir le dossier</button>
+</div>
+
+<button class="scroll-top" id="scrollTop" title="Revenir en haut" aria-label="Revenir en haut">↑</button>
+
+<footer>
+  Document interne — Milicia de Cayo Perico · <span id="footStats"></span> · Grille susceptible d'être modifiée par le commandement.
+</footer>
+<div class="toast" id="toast">Récapitulatif copié.</div>
+
+<script>
+"use strict";
+
+/* =============== DONNÉES =============== */
+const DATA = [
+  // ---- GOUVERNEMENT ----
+  { sec: "Gouvernement", cat: "RH / Secrétaire", label: "Licenciement abusif", amount: 50000 },
+  { sec: "Gouvernement", cat: "RH / Secrétaire", label: "Défaut de contrat de travail", amount: 50000 },
+  { sec: "Gouvernement", cat: "RH / Secrétaire", label: "Non présentation à une convocation", amount: 25000 },
+  { sec: "Gouvernement", cat: "RH / Secrétaire", label: "Frais administratif", amount: 15000 },
+  { sec: "Gouvernement", cat: "RH / Secrétaire", label: "Manquement au devoir", amount: 150000 },
+  { sec: "Gouvernement", cat: "RH / Secrétaire", label: "Amende forfaitaire Républicaine", amount: 100000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Retard de taxes : 5% en plus / jour de retard (sur le CA)", amount: 10000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Non respect d'un délai de paiement", amount: 100000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Recrutement de personne sans document d'identité valide", amount: 120000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Mauvaise déclaration de taxe légère", amount: 150000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Détournement d'argent", amount: 200000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Mauvaise déclaration de taxe moyenne", amount: 450000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Mauvaise déclaration de taxes forte", amount: 750000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Mauvaise déclaration de taxes extrême", amount: 1250000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Mauvaise déclaration de taxes récidive", amount: 10000000 },
+  { sec: "Gouvernement", cat: "Finances", label: "Falsification de document entrepreneurial", amount: 10000000 },
+  { sec: "Gouvernement", cat: "Etat-Civil", label: "Circulation avec des papiers d'identité / visa expirés", amount: 45000 },
+  { sec: "Gouvernement", cat: "Etat-Civil", label: "Circulation sans papiers d'identité", amount: 45000 },
+  { sec: "Gouvernement", cat: "Etat-Civil", label: "Circulation avec des papiers d'identité non conformes", amount: 45000 },
+
+  // ---- MILICIA ----
+  { sec: "Milicia de Cayo Perico", cat: "Frais", label: "Frais d'emprisonnement (cachot / cage baghera)", amount: 5000 },
+  { sec: "Milicia de Cayo Perico", cat: "Infraction", label: "Insulte envers un civil", amount: 500 },
+  { sec: "Milicia de Cayo Perico", cat: "Infraction", label: "Non respect d'un véhicule prioritaire", amount: 500 },
+  { sec: "Milicia de Cayo Perico", cat: "Infraction", label: "Dissimulation du visage sans autorisation", amount: 10000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Coup et blessures sur civil", amount: 20000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Trouble à l'ordre publique", amount: 4000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Tentative de vol de véhicule", amount: 14000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Tentative de vol de véhicule représentant de l'état", amount: 30000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Mise en danger de la vie d'autrui", amount: 15000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Outrage envers un milicien", amount: 10000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Outrage envers un représentant de l'état", amount: 20000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Chantage", amount: 10000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Menace et/ou intimidation envers un représentant de l'état", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Coup et blessures sur dépositaire de l'autorité publique", amount: 100000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Entrave à une opération des forces de l'ordre", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Entrave aux opérations Républicaine", amount: 60000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Arme blanche sortie en public", amount: 25000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Refus d'obtempérer", amount: 22000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Délit de fuite", amount: 20000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Conduite d'un véhicule civil volé", amount: 20000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Conduite d'un véhicule de travailleur volé", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Conduite d'un véhicule de service volé (Militaire, gouvernemental, EMS)", amount: 75000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Diffamation", amount: 15000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Discrimination", amount: 15000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Atteinte au droit à l'image", amount: 10000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Harcèlement", amount: 15000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Vol", amount: 20000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Dégradation de l'environnement maritime par abus ou dommage", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Utilisation et/ou présentation de faux", amount: 30000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Prise de photo et/ou vidéo sur des militaires et/ou membres du gouvernement", amount: 30000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Acte sexuel sur voie publique", amount: 20000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Mineur", label: "Harcèlement verbal répétitif", amount: 35000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Arme létale sortie en public", amount: 25000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Non paiement d'un salaire", amount: 25000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Intrusions en zone orange", amount: 30000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Intrusions en zone rouge", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Vol à main armée", amount: 30000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Possession d'armes & équipements de services (Forces de l'ordre étrangères - Hors G6 et Merryweather)", amount: 40000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Abus de pouvoir", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Vol de véhicule", amount: 25000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Escroquerie à la personne", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Agression sur un civil", amount: 35000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Agression sur un représentant de l'état", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Agression sur un corps de direction de l'armée et/ou du gouvernement", amount: 100000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Parjure (Faux témoignage)", amount: 40000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Escroquerie à l'entreprise", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Divulgation d'informations confidentielles", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Falsification de document officiel", amount: 65000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Usurpation d'identité", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Braquage de supérette", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Corruption", amount: 27000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Utilisation de documents falsifiés", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Non respect d'un Blacklist", amount: 100000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Non restitution des équipements militaires", amount: 25000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Vente d'armes et équipements de service", amount: 150000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Récidive d'infractions de moins de 7 jours", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Délit Majeur", label: "Harcèlement psychologique avec violences", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Tentative de kidnapping / séquestration", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Kidnapping / Séquestration", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Complicité de tir", amount: 50000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Complicité de meurtre", amount: 75000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Usage d'une entreprise à des fins illégales", amount: 150000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Prise d'otage sur un civil", amount: 65000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Prise d'otage sur représentant de l'état", amount: 130000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Prise d'otage sur un corps de direction de l'armée et/ou du gouvernement", amount: 150000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Tentative d'homicide sur civil", amount: 65000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Tentative d'homicide sur un représentant de l'état", amount: 80000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Tentative d'homicide sur un corps de direction de l'armée et/ou du gouvernement", amount: 120000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Accès à des informations confidentielles et/ou secret défense", amount: 100000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Divulgation d'informations confidentielles et/ou secret défense", amount: 200000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Tir sur civil", amount: 80000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Tir sur représentant de l'état", amount: 100000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Tir sur un corps de direction de l'armée et/ou du gouvernement", amount: 150000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Meurtre sur civil", amount: 90000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Meurtre sur agent de l'état", amount: 200000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Tentative d'évasion", amount: 65000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Évasion", amount: 85000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Incitation à la violence", amount: 200000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Incitation à la haine", amount: 200000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Actes de barbarie", amount: 250000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Harcèlement avec menaces de violence ou acte violent plus récidive", amount: 150000 },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Meurtre sur un corps de direction de l'armée et/ou du gouvernement", amount: null },
+  { sec: "Milicia de Cayo Perico", cat: "Crime", label: "Commission d'actes ripoux / trahison", amount: null },
+];
+DATA.forEach((d, i) => d.id = i);
+
+const SPECIAL_TEXT = "Peine de mort / Exil";
+const STORAGE_KEY = "milicia_grille_v1";
+
+/* =============== OUTILS =============== */
+const $ = id => document.getElementById(id);
+const fmt = n => "$" + Math.round(n).toLocaleString("fr-FR").replace(/[  ]/g, " ");
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function highlight(text) {
+  if (!searchTerm) return esc(text);
+  let normStr = "", map = [];
+  for (let i = 0; i < text.length; i++) {
+    const base = text[i].normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+    for (const ch of base) { normStr += ch; map.push(i); }
+  }
+  const ranges = [];
+  let idx = normStr.indexOf(searchTerm);
+  while (idx !== -1) {
+    ranges.push([map[idx], map[idx + searchTerm.length - 1] + 1]);
+    idx = normStr.indexOf(searchTerm, idx + searchTerm.length);
+  }
+  if (!ranges.length) return esc(text);
+  let out = "", pos = 0;
+  for (const [s, e] of ranges) {
+    if (s < pos) continue;
+    out += esc(text.slice(pos, s)) + "<mark>" + esc(text.slice(s, e)) + "</mark>";
+    pos = e;
+  }
+  return out + esc(text.slice(pos));
+}
+
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+/* =============== ÉTAT =============== */
+let searchTerm = "";
+let sortMode = 0;            // 0 = ordre de la grille, 1 = croissant, 2 = décroissant
+const collapsed = new Set(); // sections repliées
+const cart = new Map();      // id -> quantité
+let customs = [];            // lignes manuelles { id, label, amount }
+let customSeq = 0;
+
+/* =============== PERSISTANCE =============== */
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      items: [...cart.entries()].map(([id, qty]) => ({ label: DATA[id].label, qty })),
+      customs: customs.map(c => ({ label: c.label, amount: c.amount })),
+      lastName: $("fieldLastName").value,
+      firstName: $("fieldFirstName").value,
+      agent: $("fieldAgent").value,
+      arrest: $("fieldArrest").value,
+      release: $("fieldRelease").value,
+    }));
+  } catch (e) { /* stockage indisponible : mode sans sauvegarde */ }
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const st = JSON.parse(raw);
+    (st.items || []).forEach(it => {
+      const d = DATA.find(x => x.label === it.label);
+      if (d && it.qty > 0) cart.set(d.id, it.qty);
+    });
+    (st.customs || []).forEach(c => {
+      if (c.label && c.amount > 0) customs.push({ id: "c" + (customSeq++), label: String(c.label), amount: Number(c.amount) });
+    });
+    if (st.lastName) $("fieldLastName").value = st.lastName;
+    if (st.firstName) $("fieldFirstName").value = st.firstName;
+    if (st.agent) $("fieldAgent").value = st.agent;
+    if (st.arrest) $("fieldArrest").value = st.arrest;
+    if (st.release) $("fieldRelease").value = st.release;
+  } catch (e) { /* état corrompu : on repart à zéro */ }
+}
+
+/* =============== LISTE DES INFRACTIONS =============== */
+function matches(d) {
+  return !searchTerm || norm(d.label + " " + d.cat + " " + d.sec).includes(searchTerm);
+}
+
+function sortItems(items) {
+  if (!sortMode) return items;
+  const val = d => d.amount === null ? Infinity : d.amount;
+  return [...items].sort((a, b) => sortMode === 1 ? val(a) - val(b) : val(b) - val(a));
+}
+
+function render() {
+  const content = $("content");
+  const visible = DATA.filter(matches);
+  $("resultCount").textContent = visible.length + " infraction" + (visible.length > 1 ? "s" : "");
+  content.innerHTML = "";
+
+  if (!visible.length) {
+    const div = document.createElement("div");
+    div.className = "no-results";
+    div.innerHTML = '<div>Aucune infraction ne correspond à la recherche.</div>';
+    const btn = document.createElement("button");
+    btn.className = "btn-ghost";
+    btn.textContent = "Effacer la recherche";
+    btn.onclick = () => { $("search").value = ""; searchTerm = ""; render(); };
+    div.appendChild(btn);
+    content.appendChild(div);
+    return;
+  }
+
+  for (const sec of [...new Set(visible.map(d => d.sec))]) {
+    const secItems = visible.filter(d => d.sec === sec);
+    const secEl = document.createElement("div");
+    const isCollapsed = collapsed.has(sec) && !searchTerm;
+    secEl.className = "section" + (isCollapsed ? " collapsed" : "");
+
+    const h2 = document.createElement("h2");
+    h2.innerHTML = `<span class="chev">▾</span>${esc(sec)}<span class="sec-count">${secItems.length} infraction${secItems.length > 1 ? "s" : ""}</span>`;
+    h2.title = "Cliquer pour replier / déplier";
+    h2.onclick = () => {
+      if (collapsed.has(sec)) collapsed.delete(sec); else collapsed.add(sec);
+      render();
+    };
+    secEl.appendChild(h2);
+
+    for (const cat of [...new Set(secItems.map(d => d.cat))]) {
+      const catItems = sortItems(secItems.filter(d => d.cat === cat));
+      const block = document.createElement("div");
+      block.className = "cat-block";
+      const h3 = document.createElement("h3");
+      h3.textContent = cat;
+      block.appendChild(h3);
+
+      const table = document.createElement("table");
+      table.innerHTML = `<thead><tr><th>Infraction</th><th class="col-amount">Amende</th><th class="col-action"></th></tr></thead>`;
+      const tbody = document.createElement("tbody");
+      for (const d of catItems) {
+        const qty = cart.get(d.id) || 0;
+        const tr = document.createElement("tr");
+        if (qty) tr.classList.add("selected");
+        tr.title = "Cliquer pour ajouter au dossier";
+        tr.innerHTML = `
+          <td>${highlight(d.label)}${qty ? `<span class="row-qty">×${qty}</span>` : ""}</td>
+          <td class="amount${d.amount === null ? " special" : ""}">${d.amount === null ? SPECIAL_TEXT : fmt(d.amount)}</td>
+          <td class="action"><button class="btn-add" aria-label="Ajouter ${esc(d.label)}">Ajouter</button></td>`;
+        tr.onclick = () => addItem(d.id);
+        tbody.appendChild(tr);
+      }
+      table.appendChild(tbody);
+      block.appendChild(table);
+      secEl.appendChild(block);
+    }
+    content.appendChild(secEl);
+  }
+  updateCollapseBtn();
+}
+
+function updateCollapseBtn() {
+  const allSecs = [...new Set(DATA.map(d => d.sec))];
+  $("collapseBtn").textContent = collapsed.size >= allSecs.length ? "Tout déplier" : "Tout replier";
+}
+
+/* =============== DOSSIER =============== */
+function addItem(id) { cart.set(id, (cart.get(id) || 0) + 1); refresh(); }
+function decItem(id) {
+  const q = cart.get(id) || 0;
+  if (q <= 1) cart.delete(id); else cart.set(id, q - 1);
+  refresh();
+}
+function removeItem(id) { cart.delete(id); refresh(); }
+function removeCustom(cid) { customs = customs.filter(c => c.id !== cid); refresh(); }
+function refresh() { renderCart(); render(); save(); }
+
+function computeTotals() {
+  let total = 0, count = 0, hasSpecial = false;
+  cart.forEach((qty, id) => {
+    const d = DATA[id];
+    count += qty;
+    if (d.amount === null) hasSpecial = true;
+    else total += d.amount * qty;
+  });
+  customs.forEach(c => { total += c.amount; count += 1; });
+  return { total, count, hasSpecial };
+}
+
+function renderCart() {
+  const list = $("calcList");
+  list.innerHTML = "";
+
+  if (!cart.size && !customs.length) {
+    list.innerHTML = '<div class="calc-empty">Aucune infraction sélectionnée.<br>Cliquez sur une ligne de la grille ou sur « Ajouter ».</div>';
+  } else {
+    cart.forEach((qty, id) => {
+      const d = DATA[id];
+      const row = document.createElement("div");
+      row.className = "calc-row";
+      row.innerHTML = `
+        <span class="name">${esc(d.label)}</span>
+        <span class="qty-controls">
+          <button title="Diminuer" aria-label="Diminuer">−</button>
+          <span class="q">${qty}</span>
+          <button title="Augmenter" aria-label="Augmenter">+</button>
+        </span>
+        <span class="subtotal${d.amount === null ? " special" : ""}">${d.amount === null ? SPECIAL_TEXT : fmt(d.amount * qty)}</span>
+        <button class="btn-remove" title="Retirer du dossier" aria-label="Retirer">×</button>`;
+      const btns = row.querySelectorAll("button");
+      btns[0].onclick = () => decItem(id);
+      btns[1].onclick = () => addItem(id);
+      btns[2].onclick = () => removeItem(id);
+      list.appendChild(row);
+    });
+    customs.forEach(c => {
+      const row = document.createElement("div");
+      row.className = "calc-row";
+      row.innerHTML = `
+        <span class="name">${esc(c.label)}<span class="custom-tag">manuel</span></span>
+        <span class="subtotal">${fmt(c.amount)}</span>
+        <button class="btn-remove" title="Retirer du dossier" aria-label="Retirer">×</button>`;
+      row.querySelector(".btn-remove").onclick = () => removeCustom(c.id);
+      list.appendChild(row);
+    });
+  }
+
+  const { total, count, hasSpecial } = computeTotals();
+  const totalEl = $("totalValue");
+  if (totalEl.textContent !== fmt(total)) {
+    totalEl.classList.remove("bump");
+    void totalEl.offsetWidth;
+    totalEl.classList.add("bump");
+  }
+  totalEl.textContent = fmt(total);
+  $("countLine").textContent = count
+    ? count + " ligne" + (count > 1 ? "s" : "") + " retenue" + (count > 1 ? "s" : "")
+    : "";
+  $("specialNote").style.display = hasSpecial ? "block" : "none";
+
+  const bar = $("mobileBar");
+  bar.classList.toggle("visible", count > 0);
+  $("mbTotal").textContent = fmt(total);
+  $("mbCount").textContent = count + " ligne" + (count > 1 ? "s" : "");
+}
+
+/* =============== DÉTENTION =============== */
+function computeDuration() {
+  const a = $("fieldArrest").value, r = $("fieldRelease").value;
+  if (!a || !r) return null;
+  const [ah, am] = a.split(":").map(Number);
+  const [rh, rm] = r.split(":").map(Number);
+  let mins = (rh * 60 + rm) - (ah * 60 + am);
+  if (mins < 0) mins += 1440; // libération après minuit
+  return mins;
+}
+function fmtDuration(mins) {
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (!h) return m + " min";
+  return h + " h" + (m ? " " + String(m).padStart(2, "0") : "");
+}
+function updateDuration() {
+  const mins = computeDuration();
+  const line = $("durationLine");
+  if (mins === null) { line.style.display = "none"; return; }
+  line.style.display = "block";
+  $("durationValue").textContent = fmtDuration(mins);
+}
+
+/* =============== RÉCAPITULATIF =============== */
+function buildReport() {
+  const { total, hasSpecial } = computeTotals();
+  const now = new Date();
+  const lines = [];
+  lines.push("MILICIA DE CAYO PERICO — RÉCAPITULATIF D'AMENDE");
+  lines.push("Date : " + now.toLocaleDateString("fr-FR") + " " + now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }));
+  const lastName = $("fieldLastName").value.trim();
+  const firstName = $("fieldFirstName").value.trim();
+  const agent = $("fieldAgent").value.trim();
+  if (lastName || firstName) lines.push("Individu : " + [lastName, firstName].filter(Boolean).join(" "));
+  if (agent) lines.push("Matricule présent : " + agent);
+  const arrest = $("fieldArrest").value, release = $("fieldRelease").value;
+  if (arrest) lines.push("Heure d'arrestation : " + arrest);
+  if (release) lines.push("Heure de libération : " + release);
+  const mins = computeDuration();
+  if (mins !== null) lines.push("Durée de détention : " + fmtDuration(mins));
+  lines.push("----------------------------------------");
+  cart.forEach((qty, id) => {
+    const d = DATA[id];
+    if (d.amount === null) lines.push("- " + d.label + " : " + SPECIAL_TEXT.toUpperCase());
+    else lines.push("- " + d.label + (qty > 1 ? " (x" + qty + ")" : "") + " : " + fmt(d.amount * qty));
+  });
+  customs.forEach(c => lines.push("- " + c.label + " (manuel) : " + fmt(c.amount)));
+  lines.push("----------------------------------------");
+  lines.push("TOTAL À PAYER : " + fmt(total));
+  if (hasSpecial) lines.push("!! PEINE DE MORT / EXIL REQUIS !!");
+  return lines.join("\n");
+}
+
+function copyText(text, msg) {
+  navigator.clipboard.writeText(text).then(
+    () => toast(msg),
+    () => toast("Impossible de copier — vérifiez les autorisations du navigateur.")
+  );
+}
+
+/* =============== ÉVÈNEMENTS =============== */
+$("search").addEventListener("input", e => {
+  searchTerm = norm(e.target.value.trim());
+  render();
+});
+$("search").addEventListener("keydown", e => {
+  if (e.key === "Escape") { e.target.value = ""; searchTerm = ""; render(); e.target.blur(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "/" && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) {
+    e.preventDefault();
+    $("search").focus();
+  }
+});
+
+$("sortBtn").onclick = () => {
+  sortMode = (sortMode + 1) % 3;
+  $("sortBtn").textContent = ["Tri : grille", "Tri : montant ↑", "Tri : montant ↓"][sortMode];
+  render();
+};
+
+$("collapseBtn").onclick = () => {
+  const allSecs = [...new Set(DATA.map(d => d.sec))];
+  if (collapsed.size >= allSecs.length) collapsed.clear();
+  else allSecs.forEach(s => collapsed.add(s));
+  render();
+};
+
+$("fieldLastName").addEventListener("input", save);
+$("fieldFirstName").addEventListener("input", save);
+$("fieldAgent").addEventListener("input", save);
+$("fieldArrest").addEventListener("input", () => { updateDuration(); save(); });
+$("fieldRelease").addEventListener("input", () => { updateDuration(); save(); });
+
+function setNow(id) {
+  const d = new Date();
+  $(id).value = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  $(id).classList.remove("field-error");
+  updateDuration();
+  save();
+}
+
+// La bordure rouge disparaît dès que la case est remplie
+document.querySelectorAll(".calc-fields input").forEach(el => {
+  el.addEventListener("input", () => {
+    if (el.value.trim()) el.classList.remove("field-error");
+  });
+});
+$("nowArrest").onclick = () => setNow("fieldArrest");
+$("nowRelease").onclick = () => setNow("fieldRelease");
+
+$("customAddBtn").onclick = () => {
+  const label = $("customLabel").value.trim();
+  const amount = parseFloat($("customAmount").value);
+  if (!label || isNaN(amount) || amount <= 0) {
+    toast("Indiquez un libellé et un montant valide.");
+    return;
+  }
+  customs.push({ id: "c" + (customSeq++), label, amount: Math.round(amount) });
+  $("customLabel").value = "";
+  $("customAmount").value = "";
+  $("customLabel").focus();
+  refresh();
+};
+$("customAmount").addEventListener("keydown", e => { if (e.key === "Enter") $("customAddBtn").click(); });
+
+$("copyBtn").onclick = () => {
+  if (!cart.size && !customs.length) { toast("Le dossier est vide."); return; }
+  copyText(buildReport(), "Récapitulatif copié.");
+};
+$("copyDiscordBtn").onclick = () => {
+  if (!cart.size && !customs.length) { toast("Le dossier est vide."); return; }
+  const checks = [
+    ["fieldLastName", "nom"],
+    ["fieldFirstName", "prénom"],
+    ["fieldAgent", "matricule"],
+    ["fieldArrest", "heure d'arrestation"],
+    ["fieldRelease", "heure de libération"],
+  ];
+  const missing = [];
+  checks.forEach(([id, label]) => {
+    const el = $(id);
+    if (!el.value.trim()) {
+      missing.push(label);
+      el.classList.add("field-error");
+    } else {
+      el.classList.remove("field-error");
+    }
+  });
+  if (missing.length) {
+    toast("Case(s) à compléter : " + missing.join(", ") + ".");
+    return;
+  }
+  copyText("```\n" + buildReport() + "\n```", "Format Discord copié.");
+};
+$("printBtn").onclick = () => window.print();
+
+function confirmButton(btn, label, action) {
+  let armed = false, timer = null;
+  btn.onclick = () => {
+    if (!armed) {
+      armed = true;
+      btn.textContent = "Confirmer ?";
+      btn.classList.add("danger-armed");
+      timer = setTimeout(() => {
+        armed = false;
+        btn.textContent = label;
+        btn.classList.remove("danger-armed");
+      }, 3000);
+      return;
+    }
+    clearTimeout(timer);
+    armed = false;
+    btn.textContent = label;
+    btn.classList.remove("danger-armed");
+    action();
+  };
+}
+
+confirmButton($("clearBtn"), "Vider", () => {
+  cart.clear();
+  customs = [];
+  refresh();
+  toast("Infractions retirées du dossier.");
+});
+
+confirmButton($("resetBtn"), "Tout supprimer", () => {
+  cart.clear();
+  customs = [];
+  ["fieldLastName", "fieldFirstName", "fieldAgent", "fieldArrest", "fieldRelease"].forEach(id => $(id).value = "");
+  updateDuration();
+  refresh();
+  toast("Dossier entièrement supprimé.");
+});
+
+$("mbView").onclick = () => $("panel").scrollIntoView({ behavior: "smooth" });
+
+const scrollBtn = $("scrollTop");
+window.addEventListener("scroll", () => {
+  scrollBtn.classList.toggle("visible", window.scrollY > 400);
+}, { passive: true });
+scrollBtn.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+/* =============== HORLOGE & PIED DE PAGE =============== */
+function tick() {
+  const now = new Date();
+  $("clock").textContent =
+    now.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) +
+    " — " + now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+}
+tick();
+setInterval(tick, 15000);
+$("footStats").textContent = DATA.length + " infractions référencées";
+
+/* =============== DÉMARRAGE =============== */
+load();
+updateDuration();
+render();
+renderCart();
+</script>
+</body>
+</html>
