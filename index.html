@@ -563,6 +563,26 @@
     border-top: 1px solid var(--border);
   }
 
+  .img-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    cursor: pointer;
+    padding: 24px;
+  }
+  .img-overlay.visible { display: flex; }
+  .img-overlay img {
+    max-width: 94%;
+    max-height: 94%;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.8);
+  }
+
   .toast {
     position: fixed;
     bottom: 22px; left: 50%;
@@ -669,11 +689,10 @@
       </div>
       <div class="count-line" id="countLine"></div>
       <div class="calc-actions">
-        <button class="primary" id="copyBtn" title="Copier le récapitulatif en texte simple">Copier le récapitulatif</button>
-        <button id="copyDiscordBtn" title="Copier au format Discord (bloc de code)">Copier Discord</button>
+        <button class="primary" id="copyDiscordBtn" title="Copier au format Discord (bloc de code)">Copier Discord</button>
       </div>
       <div class="calc-actions">
-        <button id="printBtn" title="Imprimer ou enregistrer en PDF">Imprimer</button>
+        <button id="printBtn" title="Afficher la photo de la Milicia">Imprimer</button>
         <button id="clearBtn" title="Vider les infractions du dossier (clic de confirmation)">Vider</button>
       </div>
       <div class="calc-actions">
@@ -692,6 +711,10 @@
 </div>
 
 <button class="scroll-top" id="scrollTop" title="Revenir en haut" aria-label="Revenir en haut">↑</button>
+
+<div class="img-overlay" id="imgOverlay" title="Cliquer pour fermer">
+  <img src="photo-milice.png" alt="Milicia de Cayo Perico" id="miliceImg">
+</div>
 
 <footer>
   Document interne — Milicia de Cayo Perico · <span id="footStats"></span> · Grille susceptible d'être modifiée par le commandement.
@@ -923,7 +946,8 @@ function render() {
     return;
   }
 
-  for (const sec of [...new Set(visible.map(d => d.sec))]) {
+  const SEC_ORDER = ["Milicia de Cayo Perico", "Gouvernement"];
+  for (const sec of SEC_ORDER.filter(s => visible.some(d => d.sec === s))) {
     const secItems = visible.filter(d => d.sec === sec);
     const secEl = document.createElement("div");
     const isCollapsed = collapsed.has(sec) && !searchTerm;
@@ -1181,10 +1205,6 @@ $("customAddBtn").onclick = () => {
 };
 $("customAmount").addEventListener("keydown", e => { if (e.key === "Enter") $("customAddBtn").click(); });
 
-$("copyBtn").onclick = () => {
-  if (!cart.size && !customs.length) { toast("Le dossier est vide."); return; }
-  copyText(buildReport(), "Récapitulatif copié.");
-};
 $("copyDiscordBtn").onclick = () => {
   if (!cart.size && !customs.length) { toast("Le dossier est vide."); return; }
   const checks = [
@@ -1210,7 +1230,18 @@ $("copyDiscordBtn").onclick = () => {
   }
   copyText("```\n" + buildReport() + "\n```", "Format Discord copié.");
 };
-$("printBtn").onclick = () => window.print();
+$("printBtn").onclick = () => {
+  const img = $("miliceImg");
+  if (!img.naturalWidth) {
+    toast("Image introuvable : placez « photo-milice.png » dans le dossier du site.");
+    return;
+  }
+  $("imgOverlay").classList.add("visible");
+};
+$("imgOverlay").onclick = () => $("imgOverlay").classList.remove("visible");
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") $("imgOverlay").classList.remove("visible");
+});
 
 function confirmButton(btn, label, action) {
   let armed = false, timer = null;
