@@ -317,6 +317,96 @@
   #tigPaye.active { background: var(--primary); border-color: var(--primary); color: #fff; }
   #tigNonPaye.active { background: var(--danger); border-color: var(--danger); color: #fff; }
   .tig-field.field-error .tig-btns button { border-color: var(--danger); background: rgba(224, 108, 108, 0.08); }
+
+  /* ---- Sélecteur de mode TIG / Saisie ---- */
+  .mode-switch {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .mode-switch button {
+    flex: 1;
+    padding: 9px 6px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: var(--surface);
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition: color .12s, border-color .12s, background .12s;
+  }
+  .mode-switch button:hover { color: var(--text); }
+  .mode-switch button.active {
+    color: var(--primary-light);
+    border-bottom-color: var(--primary);
+    background: var(--surface-2);
+  }
+
+  /* ---- Champs du mode Saisie ---- */
+  .panel-calc:not(.mode-saisie) .saisie-only { display: none !important; }
+  .panel-calc.mode-saisie .tig-only { display: none !important; }
+  .saisie-items-wrap label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .saisie-item-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .row-error-msg {
+    display: none;
+    width: 100%;
+    font-size: 11.5px;
+    line-height: 1.35;
+    color: var(--danger);
+    margin: -2px 0 2px 2px;
+  }
+  .copy-error-msg {
+    display: none;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--danger);
+    margin-top: 8px;
+    text-align: center;
+  }
+  .saisie-item-row input.obj { flex: 0 0 34%; min-width: 0; }
+  .saisie-item-row input.num { flex: 1; min-width: 0; }
+  .saisie-item-row .rm-item {
+    flex-shrink: 0;
+    width: 28px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .saisie-item-row .rm-item:hover { border-color: var(--danger); color: var(--danger); }
+  .add-item-btn {
+    width: 100%;
+    padding: 7px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    background: none;
+    color: var(--text-dim);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color .12s, color .12s;
+  }
+  .add-item-btn:hover { border-color: var(--primary); color: var(--primary-light); }
+  .saisie-items-wrap.field-error input,
+  .saisie-items-wrap.field-error .add-item-btn { border-color: var(--danger); }
   .calc-fields .time-field label {
     display: block;
     font-size: 11px;
@@ -653,6 +743,10 @@
 
   <aside class="panel-calc" id="panel">
     <div class="panel-title">Dossier d'amende <span class="hint">enregistré automatiquement</span></div>
+    <div class="mode-switch">
+      <button type="button" id="modeTig" class="active">TIG</button>
+      <button type="button" id="modeSaisie">Saisie</button>
+    </div>
     <div class="calc-fields">
       <input type="text" id="fieldLastName" placeholder="Nom de l'individu" autocomplete="off">
       <input type="text" id="fieldFirstName" placeholder="Prénom de l'individu" autocomplete="off">
@@ -666,12 +760,19 @@
           </button>
         </div>
       </div>
-      <div class="tig-field" id="tigField">
+      <div class="tig-field tig-only" id="tigField">
         <label>TIG</label>
         <div class="tig-btns">
           <button type="button" id="tigPaye">Payé</button>
           <button type="button" id="tigNonPaye">Non payé</button>
         </div>
+      </div>
+      <input type="text" id="fieldDuree" class="saisie-only" value="Indéterminé : TIG à réaliser" placeholder="Durée" autocomplete="off" style="grid-column: 1 / -1;">
+      <input type="text" id="fieldSaisieLoc" class="saisie-only" placeholder="Lieu de saisie (ex : Coffre Caserne)" autocomplete="off" style="grid-column: 1 / -1;">
+      <div class="saisie-items-wrap saisie-only" id="saisieWrap" style="grid-column: 1 / -1;">
+        <label>Objets saisis</label>
+        <div id="saisieItems"></div>
+        <button type="button" class="add-item-btn" id="addSaisieItem">+ Ajouter un objet</button>
       </div>
     </div>
     <div class="calc-list" id="calcList"></div>
@@ -693,6 +794,7 @@
       <div class="calc-actions">
         <button class="primary" id="copyDiscordBtn" title="Copier au format Discord (bloc de code)">Copier Discord</button>
       </div>
+      <div class="copy-error-msg" id="copyError"></div>
       <div class="calc-actions">
         <button id="clearBtn" title="Vider les infractions du dossier (clic de confirmation)">Vider</button>
       </div>
@@ -868,7 +970,7 @@ function toast(msg) {
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(toast._t);
-  toast._t = setTimeout(() => t.classList.remove("show"), 1800);
+  toast._t = setTimeout(() => t.classList.remove("show"), Math.min(6000, Math.max(1800, msg.length * 45)));
 }
 
 /* =============== ÉTAT =============== */
@@ -879,6 +981,8 @@ const cart = new Map();      // id -> quantité
 let customs = [];            // lignes manuelles { id, label, amount }
 let customSeq = 0;
 let tig = "paye";            // "Payé" coché par défaut — "" | "paye" | "nonpaye"
+let mode = "tig";            // "tig" | "saisie"
+let saisieItems = [];        // objets saisis { obj, num }
 
 /* =============== PERSISTANCE =============== */
 function save() {
@@ -891,6 +995,10 @@ function save() {
       agent: $("fieldAgent").value,
       arrest: $("fieldArrest").value,
       tig: tig,
+      mode: mode,
+      duree: $("fieldDuree").value,
+      saisieLoc: $("fieldSaisieLoc").value,
+      saisieItems: saisieItems.map(it => ({ obj: it.obj, num: it.num })),
     }));
   } catch (e) { /* stockage indisponible : mode sans sauvegarde */ }
 }
@@ -911,6 +1019,12 @@ function load() {
     if (st.agent) $("fieldAgent").value = st.agent;
     if (st.arrest) $("fieldArrest").value = st.arrest;
     if (st.tig === "paye" || st.tig === "nonpaye") tig = st.tig;
+    if (st.mode === "saisie") mode = "saisie";
+    if (st.duree !== undefined && st.duree !== "") $("fieldDuree").value = st.duree;
+    if (st.saisieLoc) $("fieldSaisieLoc").value = st.saisieLoc;
+    (st.saisieItems || []).forEach(it => {
+      saisieItems.push({ obj: String(it.obj || ""), num: String(it.num || "") });
+    });
   } catch (e) { /* état corrompu : on repart à zéro */ }
 }
 
@@ -1078,30 +1192,49 @@ function renderCart() {
 }
 
 /* =============== RÉCAPITULATIF =============== */
+const SEP = "──────────────────────────────────";
+
 function buildReport() {
   const { total, hasSpecial } = computeTotals();
   const now = new Date();
   const lines = [];
-  lines.push("MILICIA DE CAYO PERICO — RÉCAPITULATIF D'AMENDE");
-  lines.push("Date : " + now.toLocaleDateString("fr-FR") + " " + now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }));
+  lines.push("MILICIA DE CAYO PERICO — " + (mode === "saisie" ? "RAPPORT DE SAISIE" : "RÉCAPITULATIF D'AMENDE"));
+  lines.push(SEP);
   const lastName = $("fieldLastName").value.trim();
   const firstName = $("fieldFirstName").value.trim();
   const agent = $("fieldAgent").value.trim();
-  if (lastName || firstName) lines.push("Individu : " + [lastName, firstName].filter(Boolean).join(" "));
-  if (agent) lines.push("Matricule présent : " + agent);
   const arrest = $("fieldArrest").value;
+  if (lastName) lines.push("Nom : " + lastName);
+  if (firstName) lines.push("Prénom : " + firstName);
+  lines.push("Date : " + now.toLocaleDateString("fr-FR"));
   if (arrest) lines.push("Heure d'arrestation : " + arrest);
-  if (tig) lines.push("État des amendes : " + (tig === "paye" ? "Payé" : "Non payé"));
-  lines.push("----------------------------------------");
+  if (agent) lines.push("Matricule(s) présent(s) : " + agent);
+  if (mode === "saisie") {
+    const duree = $("fieldDuree").value.trim();
+    if (duree) lines.push("Durée : " + duree);
+  } else if (tig) {
+    lines.push("État des amendes : " + (tig === "paye" ? "Payé" : "Non payé"));
+  }
+  lines.push(SEP);
+  lines.push("Raison :");
   cart.forEach((qty, id) => {
     const d = DATA[id];
     if (d.amount === null) lines.push("- " + d.label + " : " + SPECIAL_TEXT.toUpperCase());
     else lines.push("- " + d.label + (qty > 1 ? " (x" + qty + ")" : "") + " : " + fmt(d.amount * qty));
   });
   customs.forEach(c => lines.push("- " + c.label + " (manuel) : " + fmt(c.amount)));
-  lines.push("----------------------------------------");
+  lines.push(SEP);
   lines.push("TOTAL AMENDE : " + fmt(total));
   if (hasSpecial) lines.push("!! PEINE DE MORT / EXIL REQUIS !!");
+  if (mode === "saisie") {
+    const loc = $("fieldSaisieLoc").value.trim();
+    const objs = saisieItems.filter(it => it.obj.trim() || it.num.trim());
+    lines.push(SEP);
+    lines.push("Saisie(s) : " + (loc || "—"));
+    objs.forEach(it => {
+      lines.push("- " + (it.obj.trim() || "Objet") + (it.num.trim() ? " : " + it.num.trim() : ""));
+    });
+  }
   return lines.join("\n");
 }
 
@@ -1168,6 +1301,89 @@ function updateTigUI() {
 $("tigPaye").onclick = () => { tig = tig === "paye" ? "" : "paye"; updateTigUI(); save(); };
 $("tigNonPaye").onclick = () => { tig = tig === "nonpaye" ? "" : "nonpaye"; updateTigUI(); save(); };
 
+/* ---- Mode TIG / Saisie ---- */
+function updateModeUI() {
+  $("modeTig").classList.toggle("active", mode === "tig");
+  $("modeSaisie").classList.toggle("active", mode === "saisie");
+  $("panel").classList.toggle("mode-saisie", mode === "saisie");
+}
+$("modeTig").onclick = () => { mode = "tig"; updateModeUI(); save(); };
+$("modeSaisie").onclick = () => { mode = "saisie"; updateModeUI(); save(); };
+$("fieldDuree").addEventListener("input", save);
+$("fieldSaisieLoc").addEventListener("input", save);
+
+/* ---- Objets saisis ---- */
+function renderSaisieItems() {
+  const box = $("saisieItems");
+  box.innerHTML = "";
+  saisieItems.forEach((it, i) => {
+    const row = document.createElement("div");
+    row.className = "saisie-item-row";
+    row.innerHTML = `
+      <input type="text" class="obj" placeholder="Objet (ex : Uphone)" autocomplete="off">
+      <input type="text" class="num" placeholder="Numéro de série" autocomplete="off">
+      <button type="button" class="rm-item" title="Retirer cet objet" aria-label="Retirer">×</button>
+      <div class="row-error-msg"></div>`;
+    const [objIn, numIn] = row.querySelectorAll("input");
+    objIn.value = it.obj;
+    numIn.value = it.num;
+    objIn.addEventListener("input", () => { it.obj = objIn.value; hideCopyError(); save(); });
+    numIn.addEventListener("input", () => { it.num = numIn.value; validateSerials(); hideCopyError(); save(); });
+    row.querySelector(".rm-item").onclick = () => {
+      saisieItems.splice(i, 1);
+      renderSaisieItems();
+      save();
+    };
+    box.appendChild(row);
+  });
+  validateSerials();
+}
+
+/* Un numéro de série valide fait exactement 24 caractères hexadécimaux
+   (ex : 6a2974d0b10cf105c785168f). Rouge si invalide ou en double. */
+const SERIAL_RE = /^[0-9a-fA-F]{24}$/;
+function validateSerials() {
+  const inputs = [...$("saisieItems").querySelectorAll("input.num")];
+  const counts = {};
+  inputs.forEach(inp => {
+    const v = inp.value.trim().toLowerCase();
+    if (v) counts[v] = (counts[v] || 0) + 1;
+  });
+  const problems = [];
+  inputs.forEach((inp, i) => {
+    const v = inp.value.trim();
+    let err = "", reason = "";
+    if (v) {
+      if (!SERIAL_RE.test(v)) {
+        reason = v.length !== 24
+          ? "numéro de " + v.length + " caractère" + (v.length > 1 ? "s" : "") + " au lieu de 24"
+          : "caractères non autorisés (seuls 0-9 et a-f sont acceptés)";
+        err = "Numéro de série invalide : " + reason + ".";
+      } else if (counts[v.toLowerCase()] > 1) {
+        reason = "numéro en double avec un autre objet";
+        err = "Numéro de série en double : déjà saisi sur un autre objet.";
+      }
+      if (reason) {
+        const objName = (saisieItems[i] && saisieItems[i].obj.trim()) || "Objet " + (i + 1);
+        problems.push(objName + " (" + reason + ")");
+      }
+    }
+    inp.classList.toggle("field-error", !!err);
+    inp.title = err;
+    const msgEl = inp.closest(".saisie-item-row").querySelector(".row-error-msg");
+    msgEl.textContent = err;
+    msgEl.style.display = err ? "block" : "none";
+  });
+  return problems;
+}
+$("addSaisieItem").onclick = () => {
+  saisieItems.push({ obj: "", num: "" });
+  renderSaisieItems();
+  const rows = $("saisieItems").querySelectorAll(".saisie-item-row");
+  if (rows.length) rows[rows.length - 1].querySelector("input.obj").focus();
+  save();
+};
+
 $("customAddBtn").onclick = () => {
   const label = $("customLabel").value.trim();
   const amount = parseFloat($("customAmount").value);
@@ -1191,6 +1407,9 @@ $("copyDiscordBtn").onclick = () => {
     ["fieldAgent", "matricule"],
     ["fieldArrest", "heure d'arrestation"],
   ];
+  if (mode === "saisie") {
+    checks.push(["fieldDuree", "durée"], ["fieldSaisieLoc", "lieu de saisie"]);
+  }
   const missing = [];
   checks.forEach(([id, label]) => {
     const el = $(id);
@@ -1201,18 +1420,41 @@ $("copyDiscordBtn").onclick = () => {
       el.classList.remove("field-error");
     }
   });
-  if (!tig) {
-    missing.push("état des amendes (payé / non payé)");
-    $("tigField").classList.add("field-error");
-  } else {
-    $("tigField").classList.remove("field-error");
+  if (mode === "tig") {
+    if (!tig) {
+      missing.push("état des amendes (payé / non payé)");
+      $("tigField").classList.add("field-error");
+    } else {
+      $("tigField").classList.remove("field-error");
+    }
   }
   if (missing.length) {
-    toast("Case(s) à compléter : " + missing.join(", ") + ".");
+    showCopyError("Copie refusée — case(s) à compléter : " + missing.join(", ") + ".");
     return;
   }
-  copyText("```\n" + buildReport() + "\n```", "Format Discord copié.");
+  if (mode === "saisie") {
+    const problems = validateSerials();
+    if (problems.length) {
+      showCopyError("Copie refusée — " + problems.join(" ; ") + ".");
+      return;
+    }
+  }
+  hideCopyError();
+  copyText(buildReport(), "Récapitulatif copié.");
 };
+
+function showCopyError(msg) {
+  const el = $("copyError");
+  el.textContent = msg;
+  el.style.display = "block";
+}
+function hideCopyError() { $("copyError").style.display = "none"; }
+// Le message de refus disparaît dès qu'une case est corrigée
+document.querySelectorAll(".calc-fields input").forEach(el => {
+  el.addEventListener("input", hideCopyError);
+});
+$("tigPaye").addEventListener("click", hideCopyError);
+$("tigNonPaye").addEventListener("click", hideCopyError);
 
 function confirmButton(btn, label, action) {
   let armed = false, timer = null;
@@ -1246,10 +1488,13 @@ confirmButton($("clearBtn"), "Vider", () => {
 confirmButton($("resetBtn"), "Tout supprimer", () => {
   cart.clear();
   customs = [];
-  ["fieldLastName", "fieldFirstName", "fieldAgent", "fieldArrest"].forEach(id => $(id).value = "");
+  ["fieldLastName", "fieldFirstName", "fieldAgent", "fieldArrest", "fieldSaisieLoc"].forEach(id => $(id).value = "");
+  $("fieldDuree").value = "Indéterminé : TIG à réaliser";
   tig = "paye";
+  saisieItems = [];
+  renderSaisieItems();
   updateTigUI();
-  $("tigField").classList.remove("field-error");
+  document.querySelectorAll(".calc-fields .field-error").forEach(el => el.classList.remove("field-error"));
   refresh();
   toast("Dossier entièrement supprimé.");
 });
@@ -1276,6 +1521,8 @@ $("footStats").textContent = DATA.length + " infractions référencées";
 /* =============== DÉMARRAGE =============== */
 load();
 updateTigUI();
+updateModeUI();
+renderSaisieItems();
 render();
 renderCart();
 </script>
