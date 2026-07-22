@@ -796,7 +796,7 @@
       </div>
       <div class="copy-error-msg" id="copyError"></div>
       <div class="calc-actions">
-        <button id="clearBtn" title="Vider les infractions du dossier (clic de confirmation)">Vider</button>
+        <button id="clearBtn" title="Vider les infractions du dossier (clic de confirmation)">Vider les amendes</button>
       </div>
       <div class="calc-actions">
         <button class="btn-danger" id="resetBtn" title="Tout effacer : infractions, identité, matricule et heures (clic de confirmation)">Tout supprimer</button>
@@ -1497,7 +1497,7 @@ function confirmButton(btn, label, action) {
   };
 }
 
-confirmButton($("clearBtn"), "Vider", () => {
+confirmButton($("clearBtn"), "Vider les amendes", () => {
   cart.clear();
   customs = [];
   refresh();
