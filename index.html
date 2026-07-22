@@ -1327,7 +1327,7 @@ function renderSaisieItems() {
     const [objIn, numIn] = row.querySelectorAll("input");
     objIn.value = it.obj;
     numIn.value = it.num;
-    objIn.addEventListener("input", () => { it.obj = objIn.value; hideCopyError(); save(); });
+    objIn.addEventListener("input", () => { it.obj = objIn.value; validateSerials(); hideCopyError(); save(); });
     numIn.addEventListener("input", () => { it.num = numIn.value; validateSerials(); hideCopyError(); save(); });
     row.querySelector(".rm-item").onclick = () => {
       saisieItems.splice(i, 1);
@@ -1340,39 +1340,58 @@ function renderSaisieItems() {
 }
 
 /* Un numéro de série valide fait exactement 24 caractères hexadécimaux
-   (ex : 6a2974d0b10cf105c785168f). Rouge si invalide ou en double. */
+   (ex : 6a2974d0b10cf105c785168f). Rouge si invalide, en double ou sans nom d'objet.
+   strict = true (au moment de la copie) : chaque ligne doit avoir un nom d'objet. */
 const SERIAL_RE = /^[0-9a-fA-F]{24}$/;
-function validateSerials() {
-  const inputs = [...$("saisieItems").querySelectorAll("input.num")];
+function validateSerials(strict) {
+  const rows = [...$("saisieItems").querySelectorAll(".saisie-item-row")];
   const counts = {};
-  inputs.forEach(inp => {
-    const v = inp.value.trim().toLowerCase();
+  rows.forEach(row => {
+    const v = row.querySelector("input.num").value.trim().toLowerCase();
     if (v) counts[v] = (counts[v] || 0) + 1;
   });
   const problems = [];
-  inputs.forEach((inp, i) => {
-    const v = inp.value.trim();
-    let err = "", reason = "";
+  rows.forEach((row, i) => {
+    const objIn = row.querySelector("input.obj");
+    const numIn = row.querySelector("input.num");
+    const objV = objIn.value.trim();
+    const v = numIn.value.trim();
+    const objName = objV || "Objet " + (i + 1);
+    const errs = [];
+
+    // nom d'objet obligatoire dès qu'un numéro est saisi (ou toujours au moment de la copie)
+    let objErr = "";
+    if (!objV && (v || strict)) {
+      objErr = "Nom de l'objet manquant.";
+      errs.push(objErr);
+      problems.push(objName + " (nom de l'objet manquant)");
+    }
+    objIn.classList.toggle("field-error", !!objErr);
+    objIn.title = objErr;
+
+    let numErr = "";
     if (v) {
       if (!SERIAL_RE.test(v)) {
-        reason = v.length !== 24
+        const reason = v.length !== 24
           ? "numéro de " + v.length + " caractère" + (v.length > 1 ? "s" : "") + " au lieu de 24"
           : "caractères non autorisés (seuls 0-9 et a-f sont acceptés)";
-        err = "Numéro de série invalide : " + reason + ".";
-      } else if (counts[v.toLowerCase()] > 1) {
-        reason = "numéro en double avec un autre objet";
-        err = "Numéro de série en double : déjà saisi sur un autre objet.";
-      }
-      if (reason) {
-        const objName = (saisieItems[i] && saisieItems[i].obj.trim()) || "Objet " + (i + 1);
+        numErr = "Numéro de série invalide : " + reason + ".";
         problems.push(objName + " (" + reason + ")");
+      } else if (counts[v.toLowerCase()] > 1) {
+        numErr = "Numéro de série en double : déjà saisi sur un autre objet.";
+        problems.push(objName + " (numéro en double avec un autre objet)");
       }
+    } else if (strict && objV) {
+      numErr = "Numéro de série manquant.";
+      problems.push(objName + " (numéro de série manquant)");
     }
-    inp.classList.toggle("field-error", !!err);
-    inp.title = err;
-    const msgEl = inp.closest(".saisie-item-row").querySelector(".row-error-msg");
-    msgEl.textContent = err;
-    msgEl.style.display = err ? "block" : "none";
+    if (numErr) errs.push(numErr);
+    numIn.classList.toggle("field-error", !!numErr);
+    numIn.title = numErr;
+
+    const msgEl = row.querySelector(".row-error-msg");
+    msgEl.textContent = errs.join(" ");
+    msgEl.style.display = errs.length ? "block" : "none";
   });
   return problems;
 }
@@ -1433,7 +1452,7 @@ $("copyDiscordBtn").onclick = () => {
     return;
   }
   if (mode === "saisie") {
-    const problems = validateSerials();
+    const problems = validateSerials(true);
     if (problems.length) {
       showCopyError("Copie refusée — " + problems.join(" ; ") + ".");
       return;
